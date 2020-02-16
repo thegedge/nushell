@@ -49,6 +49,9 @@ pub enum Primitive {
     #[serde(with = "serde_bytes")]
     Binary(Vec<u8>),
 
+    /// A `Binary` that is read lazily from the given named pipe
+    PipedBinary(String),
+
     /// Beginning of stream marker, a pseudo-value not intended for tables
     BeginningOfStream,
     /// End of stream marker, a pseudo-value not intended for tables
@@ -111,6 +114,7 @@ impl ShellTypeName for Primitive {
             Primitive::Duration(_) => "duration",
             Primitive::Path(_) => "file path",
             Primitive::Binary(_) => "binary",
+            Primitive::PipedBinary(_) => "piped string",
             Primitive::BeginningOfStream => "marker<beginning of stream>",
             Primitive::EndOfStream => "marker<end of stream>",
         }
@@ -178,6 +182,7 @@ pub fn format_primitive(primitive: &Primitive, field_name: Option<&String>) -> S
         .to_owned(),
         Primitive::Binary(_) => "<binary>".to_owned(),
         Primitive::Date(d) => format_date(d),
+        Primitive::PipedBinary(_) => "<piped string>".to_owned(),
     }
 }
 

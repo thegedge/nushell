@@ -148,6 +148,7 @@ impl Type {
             Primitive::Duration(_) => Type::Duration,
             Primitive::Path(_) => Type::Path,
             Primitive::Binary(_) => Type::Binary,
+            Primitive::PipedBinary(_) => Type::Binary,
             Primitive::BeginningOfStream => Type::BeginningOfStream,
             Primitive::EndOfStream => Type::EndOfStream,
         }

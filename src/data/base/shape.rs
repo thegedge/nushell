@@ -80,6 +80,7 @@ impl InlineShape {
             Primitive::Duration(duration) => InlineShape::Duration(*duration),
             Primitive::Path(path) => InlineShape::Path(path.clone()),
             Primitive::Binary(_) => InlineShape::Binary,
+            Primitive::PipedBinary(_) => InlineShape::Binary,
             Primitive::BeginningOfStream => InlineShape::BeginningOfStream,
             Primitive::EndOfStream => InlineShape::EndOfStream,
         }

@@ -438,6 +438,10 @@ pub fn value_to_json_value(v: &Value) -> Result<serde_json::Value, ShellError> {
             }
             serde_json::Value::Array(output)
         }
+        UntaggedValue::Primitive(Primitive::PipedBinary(_b)) => {
+            // TODO
+            serde_json::Value::Null
+        }
         UntaggedValue::Row(o) => {
             let mut m = serde_json::Map::new();
             for (k, v) in o.entries.iter() {

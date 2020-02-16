@@ -100,6 +100,10 @@ fn nu_value_to_sqlite_string(v: Value) -> String {
             Primitive::Date(d) => format!("'{}'", d),
             Primitive::Path(p) => format!("'{}'", p.display().to_string().replace("'", "''")),
             Primitive::Binary(u) => format!("x'{}'", encode(u)),
+            Primitive::PipedBinary(_b) => {
+                // TODO
+                "NULL".into()
+            }
             Primitive::BeginningOfStream
             | Primitive::EndOfStream
             | Primitive::ColumnPath(_)

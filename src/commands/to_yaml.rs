@@ -111,6 +111,10 @@ pub fn value_to_yaml_value(v: &Value) -> Result<serde_yaml::Value, ShellError> {
                 .map(|x| serde_yaml::Value::Number(serde_yaml::Number::from(*x)))
                 .collect(),
         ),
+        UntaggedValue::Primitive(Primitive::PipedBinary(_b)) => {
+            // TODO
+            serde_yaml::Value::Null
+        }
         UntaggedValue::Row(o) => {
             let mut m = serde_yaml::Mapping::new();
             for (k, v) in o.entries.iter() {
