@@ -84,10 +84,7 @@ pub fn value_to_yaml_value(v: &Value) -> Result<serde_yaml::Value, ShellError> {
 
             serde_yaml::Value::Sequence(out)
         }
-        UntaggedValue::Primitive(Primitive::Path(s)) => {
-            serde_yaml::Value::String(s.display().to_string())
-        }
-
+        UntaggedValue::Primitive(Primitive::Path(s)) => serde_yaml::Value::String(s.to_string()),
         UntaggedValue::Table(l) => {
             let mut out = vec![];
 

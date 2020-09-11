@@ -1,5 +1,6 @@
 use crate::type_name::ShellTypeName;
 use crate::value::column_path::ColumnPath;
+use crate::value::path::Path;
 use crate::value::range::{Range, RangeInclusion};
 use crate::value::{serde_bigdecimal, serde_bigint};
 use bigdecimal::BigDecimal;
@@ -12,7 +13,6 @@ use num_traits::cast::{FromPrimitive, ToPrimitive};
 use num_traits::identities::Zero;
 use num_traits::sign::Signed;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 
 const NANOS_PER_SEC: u32 = 1_000_000_000;
 
@@ -50,7 +50,7 @@ pub enum Primitive {
     /// A range of values
     Range(Box<Range>),
     /// A file path
-    Path(PathBuf),
+    Path(Path),
     /// A vector of raw binary data
     #[serde(with = "serde_bytes")]
     Binary(Vec<u8>),
@@ -232,7 +232,7 @@ pub fn format_primitive(primitive: &Primitive, field_name: Option<&String>) -> S
         Primitive::Nothing => String::new(),
         Primitive::BeginningOfStream => String::new(),
         Primitive::EndOfStream => String::new(),
-        Primitive::Path(p) => format!("{}", p.display()),
+        Primitive::Path(p) => format!("{}", p),
         Primitive::Filesize(num_bytes) => {
             let byte = byte_unit::Byte::from_bytes(*num_bytes as u128);
 

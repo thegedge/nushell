@@ -118,10 +118,7 @@ pub fn value_to_json_value(v: &Value) -> Result<serde_json::Value, ShellError> {
                 })
                 .collect::<Result<Vec<serde_json::Value>, ShellError>>()?,
         ),
-        UntaggedValue::Primitive(Primitive::Path(s)) => {
-            serde_json::Value::String(s.display().to_string())
-        }
-
+        UntaggedValue::Primitive(Primitive::Path(s)) => serde_json::Value::String(s.to_string()),
         UntaggedValue::Table(l) => serde_json::Value::Array(json_list(l)?),
         UntaggedValue::Error(e) => return Err(e.clone()),
         UntaggedValue::Block(_) | UntaggedValue::Primitive(Primitive::Range(_)) => {

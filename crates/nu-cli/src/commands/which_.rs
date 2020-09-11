@@ -104,9 +104,10 @@ async fn which(args: CommandArgs, registry: &CommandRegistry) -> Result<OutputSt
     {
         if let Ok(paths) = ichwh::which_all(&item).await {
             for path in paths {
+                let path: std::path::PathBuf = path.into();
                 output.push(ReturnSuccess::value(entry_path!(
                     item,
-                    path.into(),
+                    nu_protocol::Path::from(path).into(),
                     application.tag.clone()
                 )));
             }

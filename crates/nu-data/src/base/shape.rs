@@ -1,13 +1,14 @@
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use nu_protocol::RangeInclusion;
-use nu_protocol::{format_primitive, ColumnPath, Dictionary, Primitive, UntaggedValue, Value};
+use nu_protocol::{
+    format_primitive, ColumnPath, Dictionary, Path, Primitive, UntaggedValue, Value,
+};
 use nu_source::{b, DebugDocBuilder, PrettyDebug};
 use num_bigint::BigInt;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::path::PathBuf;
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct InlineRange {
@@ -29,7 +30,7 @@ pub enum InlineShape {
     Boolean(bool),
     Date(DateTime<Utc>),
     Duration(BigInt),
-    Path(PathBuf),
+    Path(Path),
     Binary(usize),
 
     Row(BTreeMap<Column, InlineShape>),
@@ -187,7 +188,7 @@ impl PrettyDebug for FormatInlineShape {
                 &Primitive::Duration(duration.clone()),
                 None,
             )),
-            InlineShape::Path(path) => b::primitive(path.display()),
+            InlineShape::Path(path) => b::primitive(path),
             InlineShape::Binary(length) => b::opaque(format!("<binary: {} bytes>", length)),
             InlineShape::Row(row) => b::delimit(
                 "[",

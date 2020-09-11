@@ -4,6 +4,7 @@ mod debug;
 pub mod dict;
 pub mod evaluate;
 pub mod iter;
+pub mod path;
 pub mod primitive;
 pub mod range;
 mod serde_bigdecimal;
@@ -13,6 +14,7 @@ use crate::hir;
 use crate::type_name::{ShellTypeName, SpannedTypeName};
 use crate::value::dict::Dictionary;
 use crate::value::iter::{RowValueIter, TableValueIter};
+use crate::value::path::Path;
 use crate::value::primitive::Primitive;
 use crate::value::range::{Range, RangeInclusion};
 use crate::{ColumnPath, PathMember, UnspannedPathMember};
@@ -26,7 +28,6 @@ use num_bigint::BigInt;
 use num_traits::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
-use std::path::PathBuf;
 use std::time::SystemTime;
 
 /// The core structured values that flow through a pipeline
@@ -179,7 +180,7 @@ impl UntaggedValue {
     }
 
     /// Helper for creating filepath values
-    pub fn path(s: impl Into<PathBuf>) -> UntaggedValue {
+    pub fn path(s: impl Into<Path>) -> UntaggedValue {
         UntaggedValue::Primitive(Primitive::Path(s.into()))
     }
 
@@ -280,9 +281,7 @@ impl Value {
         match &self.value {
             UntaggedValue::Primitive(Primitive::String(string)) => Ok(string.clone()),
             UntaggedValue::Primitive(Primitive::Line(line)) => Ok(line.clone() + "\n"),
-            UntaggedValue::Primitive(Primitive::Path(path)) => {
-                Ok(path.to_string_lossy().to_string())
-            }
+            UntaggedValue::Primitive(Primitive::Path(path)) => Ok(path.to_string()),
             _ => Err(ShellError::type_error("string", self.spanned_type_name())),
         }
     }
@@ -295,7 +294,7 @@ impl Value {
             UntaggedValue::Primitive(Primitive::Decimal(x)) => format!("{}", x),
             UntaggedValue::Primitive(Primitive::Int(x)) => format!("{}", x),
             UntaggedValue::Primitive(Primitive::Filesize(x)) => format!("{}", x),
-            UntaggedValue::Primitive(Primitive::Path(x)) => format!("{}", x.display()),
+            UntaggedValue::Primitive(Primitive::Path(x)) => format!("{}", x),
             UntaggedValue::Primitive(Primitive::ColumnPath(path)) => {
                 let joined = path
                     .iter()
@@ -332,10 +331,10 @@ impl Value {
     }
 
     /// View the Value as a path, if possible
-    pub fn as_path(&self) -> Result<PathBuf, ShellError> {
+    pub fn as_path(&self) -> Result<Path, ShellError> {
         match &self.value {
             UntaggedValue::Primitive(Primitive::Path(path)) => Ok(path.clone()),
-            UntaggedValue::Primitive(Primitive::String(path_str)) => Ok(PathBuf::from(&path_str)),
+            UntaggedValue::Primitive(Primitive::String(path_str)) => Ok(Path::from(path_str)),
             _ => Err(ShellError::type_error("Path", self.spanned_type_name())),
         }
     }

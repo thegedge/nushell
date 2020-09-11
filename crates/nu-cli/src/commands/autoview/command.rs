@@ -162,10 +162,10 @@ pub async fn autoview(context: RunnableContext) -> Result<OutputStream, ShellErr
                         out!("{}\n", s);
                     }
                     Value {
-                        value: UntaggedValue::Primitive(Primitive::Path(s)),
+                        value: UntaggedValue::Primitive(Primitive::Path(p)),
                         ..
                     } => {
-                        out!("{}", s.display());
+                        out!("{}", p);
                     }
                     Value {
                         value: UntaggedValue::Primitive(Primitive::Int(n)),

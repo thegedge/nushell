@@ -562,7 +562,7 @@ pub fn as_string(value: &Value) -> Result<String, ShellError> {
         UntaggedValue::Primitive(Primitive::Decimal(x)) => Ok(format!("{}", x)),
         UntaggedValue::Primitive(Primitive::Int(x)) => Ok(format!("{}", x)),
         UntaggedValue::Primitive(Primitive::Filesize(x)) => Ok(format!("{}", x)),
-        UntaggedValue::Primitive(Primitive::Path(x)) => Ok(format!("{}", x.display())),
+        UntaggedValue::Primitive(Primitive::Path(x)) => Ok(format!("{}", x)),
         UntaggedValue::Primitive(Primitive::ColumnPath(path)) => {
             let joined = path
                 .iter()

@@ -2,7 +2,7 @@ use crate::commands::WholeStreamCommand;
 use crate::context::CommandRegistry;
 use crate::prelude::*;
 use nu_errors::ShellError;
-use nu_protocol::{Primitive, ReturnSuccess, Signature, UntaggedValue};
+use nu_protocol::{Path, Primitive, ReturnSuccess, Signature, UntaggedValue};
 
 pub struct SubCommand;
 
@@ -41,7 +41,7 @@ pub async fn path(
     args: CommandArgs,
     _registry: &CommandRegistry,
 ) -> Result<OutputStream, ShellError> {
-    let path = config::default_path()?;
+    let path: Path = config::default_path()?.into();
 
     Ok(OutputStream::one(ReturnSuccess::value(
         UntaggedValue::Primitive(Primitive::Path(path)).into_value(args.call_info.name_tag),

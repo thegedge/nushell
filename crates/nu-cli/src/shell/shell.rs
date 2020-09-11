@@ -43,4 +43,7 @@ pub trait Shell: std::fmt::Debug {
         contents: &[u8],
         name: Span,
     ) -> Result<OutputStream, ShellError>;
+
+    // Resolves Shell-specific components of a Path, such as the homedir
+    //fn resolve(p: nu_protocol::Path) -> Path {}
 }

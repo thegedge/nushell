@@ -11,7 +11,7 @@ use crate::prelude::*;
 use nu_errors::ShellError;
 use nu_protocol::{ColumnPath, Primitive, ReturnSuccess, ShellTypeName, UntaggedValue, Value};
 use nu_source::Span;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub use basename::PathBasename;
 pub use command::Path as PathCommand;
@@ -32,7 +32,10 @@ where
     F: Fn(&Path) -> UntaggedValue + Send + 'static,
 {
     let v = match &v.value {
-        UntaggedValue::Primitive(Primitive::Path(buf)) => action(buf).into_value(v.tag()),
+        UntaggedValue::Primitive(Primitive::Path(p)) => {
+            let path: PathBuf = p.into();
+            action(&path).into_value(v.tag())
+        }
         UntaggedValue::Primitive(Primitive::String(s))
         | UntaggedValue::Primitive(Primitive::Line(s)) => action(s.as_ref()).into_value(v.tag()),
         other => {

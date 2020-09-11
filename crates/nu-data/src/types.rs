@@ -30,20 +30,6 @@ impl ExtractType for bool {
     }
 }
 
-impl ExtractType for std::path::PathBuf {
-    fn extract(value: &Value) -> Result<std::path::PathBuf, ShellError> {
-        trace!("Extracting {:?} for PathBuf", value);
-
-        match &value {
-            Value {
-                value: UntaggedValue::Primitive(Primitive::Path(p)),
-                ..
-            } => Ok(p.clone()),
-            other => Err(ShellError::type_error("Path", other.spanned_type_name())),
-        }
-    }
-}
-
 impl ExtractType for i64 {
     fn extract(value: &Value) -> Result<i64, ShellError> {
         trace!("Extracting {:?} for i64", value);

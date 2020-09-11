@@ -65,9 +65,7 @@ fn helper(v: &Value) -> Result<toml::Value, ShellError> {
         UntaggedValue::Primitive(Primitive::Pattern(s)) => toml::Value::String(s.clone()),
         UntaggedValue::Primitive(Primitive::String(s)) => toml::Value::String(s.clone()),
         UntaggedValue::Primitive(Primitive::Line(s)) => toml::Value::String(s.clone()),
-        UntaggedValue::Primitive(Primitive::Path(s)) => {
-            toml::Value::String(s.display().to_string())
-        }
+        UntaggedValue::Primitive(Primitive::Path(s)) => toml::Value::String(s.to_string()),
         UntaggedValue::Primitive(Primitive::ColumnPath(path)) => toml::Value::Array(
             path.iter()
                 .map(|x| match &x.unspanned {

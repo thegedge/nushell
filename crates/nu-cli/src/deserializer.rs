@@ -1,14 +1,13 @@
 use log::trace;
 use nu_errors::{CoerceInto, ShellError};
 use nu_protocol::{
-    hir::Block, CallInfo, ColumnPath, Primitive, RangeInclusion, ShellTypeName, UntaggedValue,
-    Value,
+    hir::Block, CallInfo, ColumnPath, Path, Primitive, RangeInclusion, ShellTypeName,
+    UntaggedValue, Value,
 };
 use nu_source::{HasSpan, Spanned, SpannedItem, Tagged, TaggedItem};
 use nu_value_ext::ValueExt;
 use serde::de;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 
 #[derive(Copy, Clone, Deserialize, Serialize)]
 pub struct NumericRange {
@@ -404,7 +403,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut ConfigDeserializer<'de> {
             Value {
                 value: UntaggedValue::Primitive(Primitive::Path(p)),
                 ..
-            } => visit::<Tagged<PathBuf>, _>(p.tagged(tag), name, fields, visitor),
+            } => visit::<Tagged<Path>, _>(p.tagged(tag), name, fields, visitor),
             Value {
                 value: UntaggedValue::Primitive(Primitive::Int(int)),
                 ..
