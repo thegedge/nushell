@@ -1,17 +1,21 @@
-use crate::completion::command::CommandCompleter;
+use std::borrow::Cow;
+use std::collections::HashMap;
+
+use nu_source::Tag;
+
 use crate::completion::flag::FlagCompleter;
 use crate::completion::matchers;
 use crate::completion::matchers::Matcher;
-use crate::completion::path::{PathCompleter, PathSuggestion};
+use crate::completion::path::PathCompleter;
 use crate::completion::{self, Completer, Suggestion};
 use crate::evaluation_context::EvaluationContext;
-use nu_source::Tag;
 
-use std::borrow::Cow;
-
-pub(crate) struct NuCompleter {}
-
-impl NuCompleter {}
+pub(crate) struct NuCompleter {
+    command: Box<dyn Completer>,
+    flag: HashMap<String, Box<dyn Completer>>,
+    argument: HashMap<Option<String>, HashMap<Option<String>, Box<dyn Completer>>>,
+    default_argument: Box<dyn Completer>,
+}
 
 impl NuCompleter {
     pub fn complete(
@@ -59,18 +63,19 @@ impl NuCompleter {
                     let partial = location.span.slice(line);
                     match location.item {
                         LocationType::Command => {
-                            let command_completer = CommandCompleter;
-                            command_completer.complete(context, partial, matcher.to_owned())
+                            self.command.complete(context, partial, matcher.to_owned())
                         }
 
                         LocationType::Flag(cmd) => {
-                            let flag_completer = FlagCompleter { cmd };
-                            flag_completer.complete(context, partial, matcher.to_owned())
+                            if let Some(flag_completer) = self.flag.get(&cmd) {
+                                flag_completer.complete(context, partial, matcher.to_owned())
+                            } else {
+                                let flag_completer = FlagCompleter { cmd };
+                                flag_completer.complete(context, partial, matcher.to_owned())
+                            }
                         }
 
-                        LocationType::Argument(cmd, _arg_name) => {
-                            let path_completer = PathCompleter;
-
+                        LocationType::Argument(cmd, arg_name) => {
                             const QUOTE_CHARS: &[char] = &['\'', '"', '`'];
 
                             // TODO Find a better way to deal with quote chars. Can the completion
@@ -94,17 +99,20 @@ impl NuCompleter {
                                 partial
                             };
 
-                            let completed_paths = path_completer.path_suggestions(partial, matcher);
-                            match cmd.as_deref().unwrap_or("") {
-                                "cd" => select_directory_suggestions(completed_paths),
-                                _ => completed_paths,
-                            }
-                            .into_iter()
-                            .map(|s| Suggestion {
-                                replacement: requote(s.suggestion.replacement),
-                                display: s.suggestion.display,
-                            })
-                            .collect()
+                            let arg_completer = self
+                                .argument
+                                .get(&cmd)
+                                .and_then(|map| map.get(&arg_name).or_else(|| map.get(&None)))
+                                .unwrap_or(&self.default_argument);
+
+                            arg_completer
+                                .complete(context, partial, matcher)
+                                .into_iter()
+                                .map(|s| Suggestion {
+                                    replacement: requote(s.replacement),
+                                    display: s.display,
+                                })
+                                .collect()
                         }
 
                         LocationType::Variable => Vec::new(),
@@ -117,17 +125,27 @@ impl NuCompleter {
     }
 }
 
-fn select_directory_suggestions(completed_paths: Vec<PathSuggestion>) -> Vec<PathSuggestion> {
-    completed_paths
-        .into_iter()
-        .filter(|suggestion| {
-            suggestion
-                .path
-                .metadata()
-                .map(|md| md.is_dir())
-                .unwrap_or(false)
-        })
-        .collect()
+impl Default for NuCompleter {
+    fn default() -> NuCompleter {
+        use crate::completion::command::CommandCompleter;
+        use crate::completion::path::DirectoryCompleter;
+
+        let mut temp = HashMap::new();
+        temp.insert(
+            Some("directory".into()),
+            Box::new(DirectoryCompleter) as Box<dyn Completer>,
+        );
+
+        let mut argument = HashMap::new();
+        argument.insert(Some("cd".into()), temp);
+
+        NuCompleter {
+            command: Box::new(CommandCompleter),
+            flag: HashMap::new(),
+            argument,
+            default_argument: Box::new(PathCompleter),
+        }
+    }
 }
 
 fn requote(orig_value: String) -> String {

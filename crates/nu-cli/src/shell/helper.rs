@@ -23,7 +23,7 @@ impl Helper {
         hinter: Option<rustyline::hint::HistoryHinter>,
     ) -> Helper {
         Helper {
-            completer: NuCompleter {},
+            completer: Default::default(),
             hinter,
             context,
             colored_prompt: String::new(),

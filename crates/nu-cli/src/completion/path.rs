@@ -6,6 +6,7 @@ use crate::completion::{Completer, CompletionContext, Suggestion};
 const SEP: char = std::path::MAIN_SEPARATOR;
 
 pub struct PathCompleter;
+pub struct DirectoryCompleter;
 
 pub struct PathSuggestion {
     pub(crate) path: PathBuf,
@@ -82,6 +83,29 @@ impl Completer for PathCompleter {
     ) -> Vec<Suggestion> {
         self.path_suggestions(partial, matcher)
             .into_iter()
+            .map(|ps| ps.suggestion)
+            .collect()
+    }
+}
+
+impl Completer for DirectoryCompleter {
+    fn complete(
+        &self,
+        _ctx: &CompletionContext<'_>,
+        partial: &str,
+        matcher: &dyn Matcher,
+    ) -> Vec<Suggestion> {
+        let path_completer = PathCompleter;
+        path_completer
+            .path_suggestions(partial, matcher)
+            .into_iter()
+            .filter(|suggestion| {
+                suggestion
+                    .path
+                    .metadata()
+                    .map(|md| md.is_dir())
+                    .unwrap_or(false)
+            })
             .map(|ps| ps.suggestion)
             .collect()
     }
