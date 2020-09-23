@@ -38,24 +38,28 @@ impl WholeStreamCommand for AliasCommand {
         args: CommandArgs,
         registry: &CommandRegistry,
     ) -> Result<OutputStream, ShellError> {
-        let call_info = args.call_info.clone();
-        let registry = registry.clone();
-        let mut block = self.block.clone();
-        block.set_redirect(call_info.args.external_redirection);
+        let (block, input, mut context, scope) = {
+            let call_info = args.call_info.clone();
+            let registry = registry.clone();
+            let mut block = self.block.clone();
+            block.set_redirect(call_info.args.external_redirection);
 
-        let alias_command = self.clone();
-        let mut context = EvaluationContext::from_args(&args, &registry);
-        let input = args.input;
+            let alias_command = self.clone();
+            let context = EvaluationContext::from_args(&args, &registry);
+            let input = args.input;
 
-        let mut scope = call_info.scope.clone();
-        let evaluated = call_info.evaluate(&registry).await?;
-        if let Some(positional) = &evaluated.args.positional {
-            for (pos, arg) in positional.iter().enumerate() {
-                scope
-                    .vars
-                    .insert(alias_command.args[pos].0.to_string(), arg.clone());
+            let mut scope = call_info.scope.clone();
+            let evaluated = call_info.evaluate(&registry).await?;
+            if let Some(positional) = &evaluated.args.positional {
+                for (pos, arg) in positional.iter().enumerate() {
+                    scope
+                        .vars
+                        .insert(alias_command.args[pos].0.to_string(), arg.clone());
+                }
             }
-        }
+
+            (block, input, context, scope)
+        };
 
         // FIXME: we need to patch up the spans to point at the top-level error
         Ok(run_block(
